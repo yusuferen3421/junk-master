@@ -7,7 +7,6 @@ import os
 
 # --- VERİTABANI KURULUMU ---
 db_file = "junkmaster_v2.db"
-db_exists = os.path.exists(db_file)
 conn = sqlite3.connect(db_file)
 cursor = conn.cursor()
 
@@ -351,7 +350,8 @@ async def upgrade_home(ctx):
 
 # 8. Profil (!profil)
 @bot.command(name="profil", aliases=["cüzdan", "bakiye"])
-async def profil(ctx):
+async def profil(ctx.author_id_param=None, *args, **kwargs):
+    ctx = args[0] if args else ctx_author_id_param
     check_player(ctx.author.id)
     
     cursor.execute("SELECT money, workshop_level, home_level, scavenge_tier FROM players WHERE user_id = ?", (ctx.author.id,))
@@ -369,8 +369,11 @@ async def profil(ctx):
     
     await ctx.send(embed=embed)
 
-# --- BOT TOKEN ---
-TOKEN = ""
+# --- BOT TOKEN (Railway Variables'dan Okur) ---
+TOKEN = os.environ.get("DISCORD_TOKEN")
 
 if __name__ == "__main__":
-    bot.run(TOKEN)
+    if not TOKEN:
+        print("❌ HATA: DISCORD_TOKEN bulunamadı! Railway panelindeki Variables kısmına tokenini eklemelisin.")
+    else:
+        bot.run(TOKEN)
